@@ -102,10 +102,10 @@ int main(int argc, char* argv[]) {
                     
                     double cte = polyeval(coeffs, px) - py;
                     
-//                    double dy = coeffs[1] + 2 * coeffs[2] * px + 3 * pow(px, 2);
+//                    double dy = coeffs[1] + 2 * coeffs[2] * px + 3 * coeffs[3] * pow(px, 2);
                     double dy = 0;
                     for (int i = 1; i < coeffs.size(); ++i) {
-                        dy += i * coeffs[i] * pow(px, i-1);;
+                        dy += i * coeffs[i] * pow(px, i-1);
                     }
                     
                     double epsi = 0 - atan(dy);
