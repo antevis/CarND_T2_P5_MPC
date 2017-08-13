@@ -99,9 +99,16 @@ int main(int argc, char* argv[]) {
                     v = vms1 / mph2ms();
                     
                     auto coeffs = polyfit(ptsx_e, ptsy_e, mpc.poly_order_);
-                    double cte = polyeval(coeffs,0);
                     
-                    double epsi = 0 - atan(coeffs[0]);
+                    double cte = polyeval(coeffs, px) - py;
+                    
+//                    double dy = coeffs[1] + 2 * coeffs[2] * px + 3 * pow(px, 2);
+                    double dy = 0;
+                    for (int i = 1; i < coeffs.size(); ++i) {
+                        dy += i * coeffs[i] * pow(px, i-1);;
+                    }
+                    
+                    double epsi = 0 - atan(dy);
 
                     Eigen::VectorXd state(6);
                     state << px, py, psi, v, cte, epsi;
