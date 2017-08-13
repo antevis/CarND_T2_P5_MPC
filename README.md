@@ -142,8 +142,8 @@ fg[0] += cost_weights[6] * CppAD::pow(curr_accel * curr_v * curr_epsi, 2);
 The idea is that the the faster the vehicle moves, the greater concern its `cte` and `epsi` pose. And the
 greater the errors, the less acceleration should be applied.
 
-The experimentation showed that the `epsi`, which is the vehicle's orientation error has much greater 
-(in fact, orders of magnitude greater) importance on the vehicle's behavior than the `cte`. 
+The experimentation showed that the `epsi`, which is the vehicle's orientation error, has much greater
+(in fact, orders of magnitude greater) importance for the vehicle's behavior than the `cte`. 
 Indeed, `cte` itself might not be much of a problem unless it's still within the lane bounds and the 
 vehicle's orientation (`psi`) is close to the expected - it would just mean that the vehicle moves 
 parallel to the expected trajectory with a slight lateral shift. While large `epsi` signifies that the vehicle 
