@@ -1,7 +1,7 @@
 [//]: # (Image References)
-[formulae]: ./data/kinematic_equations_small.png
-[latencyFormulae]: ./data/latency_equations_small.png
-[latencyChart]: ./data/chart.png
+[formulae]: ./img/kinematic_equations_small.png
+[latencyFormulae]: ./img/latency_equations_small.png
+[latencyChart]: ./img/chart.png
 
 # CarND-Controls-MPC
 Self-Driving Car Engineer Nanodegree Program
