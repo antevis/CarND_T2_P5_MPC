@@ -24,24 +24,24 @@ public:
     typedef CPPAD_TESTVECTOR(ADdouble) ADvector;
     typedef CPPAD_TESTVECTOR(double) Dvector;
     
-    double Lf;                          // front to CoG distance
-    double ref_v;                       // reference speed
-    std::vector<double> cost_weights;   // cost weights
-    double latency;                     // latency, ms
-    int poly_order;                     // order of the polynomial
+    double Lf_;                          // front to CoG distance
+    double ref_v_;                       // reference speed
+    std::vector<double> cost_weights_;   // cost weights
+    double latency_;                     // latency, ms
+    int poly_order_;                     // order of the polynomial
     
-    double steer;                       // computed steering control angle in RADIANS [-...+25*pi/180]
-    double accel;                       // computed accelerator control value [-1...1]
+    double steer_;                       // computed steering control angle in RADIANS [-...+25*pi/180]
+    double accel_;                       // computed accelerator control value [-1...1]
     
     // points of minimum cost trajectory returned from the solver (green line)
-    std::vector<double> mpc_x_vals;
-    std::vector<double> mpc_y_vals;
+    std::vector<double> mpc_x_vals_;
+    std::vector<double> mpc_y_vals_;
     
     // Reference points in the vehicle's coordinate system (yellow line)
-    std::vector<double> next_x_vals;
-    std::vector<double> next_y_vals;
+    std::vector<double> next_x_vals_;
+    std::vector<double> next_y_vals_;
     
-    Eigen::VectorXd coeffs;             // polynomial coefficients
+    Eigen::VectorXd coeffs_;             // polynomial coefficients
     
     /** Constructors/Destructor */
     MPC();
@@ -142,9 +142,9 @@ private:
     void set_next_vals();
     
 
-    size_t n;                           // timesteps count
-    double dt;                          // timestep duration, s
-    const size_t state_dimension = 6;   // state dimensionality
+    size_t n_;                           // timesteps count
+    double dt_;                          // timestep duration, s
+    const size_t state_dimension_ = 6;   // state dimensionality
 };
 
 #endif /* MPC_H */

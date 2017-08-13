@@ -84,7 +84,8 @@ Here is the chart supporting the above calculations:
 ![alt_text][latencyChart]
 
 I assume that given the initial `delta` as the vehicle's steering angle, it moves along the segment of a 
-circle of radius `R` for a distance of `L`.
+circle of radius `R` for a distance of `L`. To compute `dx`, the absolute value of `psi` being used,
+as `dx` assumed to be always positive, regardless of the `psi`'s sign.
 
 ### MPC solution
 

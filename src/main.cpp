@@ -26,18 +26,18 @@ int main(int argc, char* argv[]) {
     if (argv[1]) {
         std::vector<double> weights(9);
         
-        mpc.ref_v = atof(argv[1]);
+        mpc.ref_v_ = atof(argv[1]);
         
         for (size_t i = 0; i < weights.size(); ++i) {
             weights[i] = atof(argv[i + 2]);
         }
         
-        mpc.cost_weights = weights;
+        mpc.cost_weights_ = weights;
     }
     
-    std::cout << "ref v: " << mpc.ref_v << std::endl;
-    for (int i = 0; i < mpc.cost_weights.size(); ++i) {
-        std::cout << mpc.cost_weights[i] << " ";
+    std::cout << "ref v: " << mpc.ref_v_ << std::endl;
+    for (int i = 0; i < mpc.cost_weights_.size(); ++i) {
+        std::cout << mpc.cost_weights_[i] << " ";
     }
     std::cout << std::endl;
     
@@ -80,13 +80,13 @@ int main(int argc, char* argv[]) {
                     /// This isn't strictly true, but there's no other measure of acceleration
                     /// except the throttle value.
                     /// Though, completely omitting this step (condidering speed inchanged) also works well.
-                    double vms1 = vms + accel * (mpc.latency / 1000);
+                    double vms1 = vms + accel * (mpc.latency_ / 1000);
                     
                     /// Depending on steer_value, psi might have become non-zero during the period of latency
-                    psi = vms1 / mpc.Lf * -steer_value * (mpc.latency / 1000);
+                    psi = vms1 / mpc.Lf_ * -steer_value * (mpc.latency_ / 1000);
                     
                     /// Segment length travelled during the period of latency
-                    double L = vms * (mpc.latency / 1000) + .5 * accel * pow(mpc.latency / 1000, 2);
+                    double L = vms * (mpc.latency_ / 1000) + .5 * accel * pow(mpc.latency_ / 1000, 2);
                     
                     /// Derived geometrically. (L / psi) is a curvature radius: https://en.wikipedia.org/wiki/Circular_segment
                     px = psi != 0 ? (L / psi) * sin(std::abs(psi)) : L;
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
                     /// behavior as with mph.
                     v = vms1 / mph2ms();
                     
-                    auto coeffs = polyfit(ptsx_e, ptsy_e, mpc.poly_order);
+                    auto coeffs = polyfit(ptsx_e, ptsy_e, mpc.poly_order_);
                     double cte = coeffs[0];
                     
                     double dpsi = 0;
@@ -118,16 +118,16 @@ int main(int argc, char* argv[]) {
                     json msgJson;
                     
                     /// New values for the actuators controls
-                    msgJson["steering_angle"] = mpc.steer;
-                    msgJson["throttle"] = mpc.accel;
+                    msgJson["steering_angle"] = mpc.steer_;
+                    msgJson["throttle"] = mpc.accel_;
                     
                     /// points of minimum cost trajectory returned from the solver (green line)
-                    msgJson["mpc_x"] = mpc.mpc_x_vals;
-                    msgJson["mpc_y"] = mpc.mpc_y_vals;
+                    msgJson["mpc_x"] = mpc.mpc_x_vals_;
+                    msgJson["mpc_y"] = mpc.mpc_y_vals_;
                     
                     /// Reference points in the vehicle's coordinate system (yellow line)
-                    msgJson["next_x"] = mpc.next_x_vals;
-                    msgJson["next_y"] = mpc.next_y_vals;
+                    msgJson["next_x"] = mpc.next_x_vals_;
+                    msgJson["next_y"] = mpc.next_y_vals_;
                     
                     
                     auto msg = "42[\"steer\"," + msgJson.dump() + "]";
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
                     //
                     // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE
                     // SUBMITTING.
-                    const unsigned long timeToSleep = static_cast<double>(mpc.latency);
+                    const unsigned long timeToSleep = static_cast<double>(mpc.latency_);
                     std::this_thread::sleep_for(std::chrono::milliseconds(timeToSleep));
                     ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
                 }

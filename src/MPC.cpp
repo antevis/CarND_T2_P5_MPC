@@ -18,13 +18,13 @@ MPC::MPC() {
 
 MPC::MPC(size_t n, double dt, double Lf, double ref_v, double latency, int poly_order) {
     
-    this->n = n;
-    this->dt = dt;
-    this->Lf = Lf;
-    this->ref_v = ref_v;
-    this->cost_weights = {.5, 500, .4, 1, 1, .003, .03, 500, 1};
-    this->latency = latency;
-    this->poly_order = poly_order;
+    this->n_ = n;
+    this->dt_ = dt;
+    this->Lf_ = Lf;
+    this->ref_v_ = ref_v;
+    this->cost_weights_ = {.5, 500, .4, 1, 1, .003, .03, 500, 1};
+    this->latency_ = latency;
+    this->poly_order_ = poly_order;
 }
 
 void MPC::operator()(ADvector& fg, const ADvector& vars) {
@@ -38,7 +38,7 @@ void MPC::operator()(ADvector& fg, const ADvector& vars) {
     ADdouble next_delta = 0;
     ADdouble next_accel = 0;
     
-    for (int t = 0; t < n; t++) {
+    for (int t = 0; t < n_; t++) {
         
         curr_cte = vars[get_cte_start() + t];
         curr_epsi = vars[get_epsi_start() + t];
@@ -46,40 +46,40 @@ void MPC::operator()(ADvector& fg, const ADvector& vars) {
         
         /// The part of the cost based on the reference state.
         /// Expresses general concern about cte, epsi and maintaining speed
-        fg[0] += cost_weights[0] * CppAD::pow(curr_cte, 2);
-        fg[0] += cost_weights[1] * CppAD::pow(curr_epsi, 2);
-        fg[0] += cost_weights[2] * CppAD::pow(curr_v - ref_v, 2);
+        fg[0] += cost_weights_[0] * CppAD::pow(curr_cte, 2);
+        fg[0] += cost_weights_[1] * CppAD::pow(curr_epsi, 2);
+        fg[0] += cost_weights_[2] * CppAD::pow(curr_v - ref_v_, 2);
         
         /// Usage of actuators.
-        if (t < n - 1) {
+        if (t < n_ - 1) {
             
             curr_delta = vars[get_delta_start() + t];
             curr_accel = vars[get_a_start() + t];
             
             /// Minimizes the use of actuators.
-            fg[0] += cost_weights[3] * CppAD::pow(curr_delta, 2);
-            fg[0] += cost_weights[4] * CppAD::pow(curr_accel, 2);
+            fg[0] += cost_weights_[3] * CppAD::pow(curr_delta, 2);
+            fg[0] += cost_weights_[4] * CppAD::pow(curr_accel, 2);
             
             /// Adds additional cost for co-dependence of curent speed, acceleration and cte/epsi
-            fg[0] += cost_weights[5] * CppAD::pow(curr_accel * curr_v * curr_cte, 2);
-            fg[0] += cost_weights[6] * CppAD::pow(curr_accel * curr_v * curr_epsi, 2);
+            fg[0] += cost_weights_[5] * CppAD::pow(curr_accel * curr_v * curr_cte, 2);
+            fg[0] += cost_weights_[6] * CppAD::pow(curr_accel * curr_v * curr_epsi, 2);
 
         }
         
-        if (t < n - 2) {
+        if (t < n_ - 2) {
             
             next_delta = vars[get_delta_start() + t + 1];
             next_accel = vars[get_a_start() + t + 1];
             
             /// Minimizes the value gap between sequential actuations.
-            fg[0] += cost_weights[7] * CppAD::pow(next_delta - curr_delta, 2);
-            fg[0] += cost_weights[8] * CppAD::pow(next_accel - curr_accel, 2);
+            fg[0] += cost_weights_[7] * CppAD::pow(next_delta - curr_delta, 2);
+            fg[0] += cost_weights_[8] * CppAD::pow(next_accel - curr_accel, 2);
         }
     }
     
     copy_with_offset(fg, vars, starts(), 1);
     
-    for (int t = 1; t < n; ++t) {
+    for (int t = 1; t < n_; ++t) {
         /// The state at time t+1 .
         State<CppAD::AD<double>> state_1 = set_state<CppAD::AD<double>>(t, vars);
         
@@ -97,22 +97,22 @@ std::vector<size_t> MPC::starts() {
 }
 
 MPC::ADdouble MPC::dx(ADdouble x_1, ADdouble x_0, ADdouble v0, ADdouble psi0) {
-    return x_1 - (x_0 + v0 * CppAD::cos(psi0) * dt);
+    return x_1 - (x_0 + v0 * CppAD::cos(psi0) * dt_);
 }
 MPC::ADdouble MPC::dy(ADdouble y_1, ADdouble y_0, ADdouble v0, ADdouble psi0) {
-    return y_1 - (y_0 + v0 * CppAD::sin(psi0) * dt);
+    return y_1 - (y_0 + v0 * CppAD::sin(psi0) * dt_);
 }
 MPC::ADdouble MPC::dpsi(ADdouble psi_1, ADdouble psi_0, ADdouble v0, ADdouble delta0) {
-    return psi_1 - (psi_0 - v0 / Lf * delta0 * dt);
+    return psi_1 - (psi_0 - v0 / Lf_ * delta0 * dt_);
 }
 MPC::ADdouble MPC::dv(ADdouble v_1, ADdouble v_0, ADdouble a) {
-    return v_1 - (v_0 + a * dt);
+    return v_1 - (v_0 + a * dt_);
 }
 MPC::ADdouble MPC::dcte(ADdouble cte_1, ADdouble f0, ADdouble y0, ADdouble v0, ADdouble epsi0) {
-    return  cte_1 - (f0 - y0 + v0 * CppAD::sin(epsi0) * dt);
+    return  cte_1 - (f0 - y0 + v0 * CppAD::sin(epsi0) * dt_);
 }
 MPC::ADdouble MPC::depsi(ADdouble epsi1, ADdouble psi0, ADdouble psides0, ADdouble v0, ADdouble delta0) {
-    return epsi1 - ((psi0 - psides0) + v0 / Lf * delta0 * dt);
+    return epsi1 - ((psi0 - psides0) + v0 / Lf_ * delta0 * dt_);
 }
 
 
@@ -125,11 +125,11 @@ void MPC::update_fg(ADvector &fg, const ADvector &vars, int t, State<ADdouble> &
     ADdouble df0 = 0;
     
     /// Computes f(x) at state_0 and it's derivative
-    for (int i = 0; i < coeffs.size(); ++i) {
-        f0 += coeffs[i] * pow(state_0.x, i);
+    for (int i = 0; i < coeffs_.size(); ++i) {
+        f0 += coeffs_[i] * pow(state_0.x, i);
         
         if (i > 0) {
-            df0 += i * coeffs[i] * pow(state_0.x, i-1);
+            df0 += i * coeffs_[i] * pow(state_0.x, i-1);
         }
     }
     
@@ -153,7 +153,7 @@ void MPC::copy_with_offset(ADvector &target, const ADvector &source, std::vector
 
 template<class T>
 State<T> MPC::set_state(Eigen::VectorXd vector) {
-    assert(vector.size() == state_dimension);
+    assert(vector.size() == state_dimension_);
     
     State<T> state;
     
@@ -200,32 +200,32 @@ std::vector<T> MPC::state_values(State<T> state) {
 /// variables in a singular vector. Thus, we should establish
 /// when one variable starts and another ends to make life easier.
 size_t MPC::get_x_start() { return 0; }
-size_t MPC::get_y_start() { return n; }
-size_t MPC::get_psi_start() { return n * 2; }
-size_t MPC::get_v_start() { return n * 3; }
-size_t MPC::get_cte_start() { return n * 4; }
-size_t MPC::get_epsi_start() { return n * 5; }
-size_t MPC::get_delta_start() { return n * 6; }
-size_t MPC::get_a_start() { return n * 7 - 1; }
+size_t MPC::get_y_start() { return n_; }
+size_t MPC::get_psi_start() { return n_ * 2; }
+size_t MPC::get_v_start() { return n_ * 3; }
+size_t MPC::get_cte_start() { return n_ * 4; }
+size_t MPC::get_epsi_start() { return n_ * 5; }
+size_t MPC::get_delta_start() { return n_ * 6; }
+size_t MPC::get_a_start() { return n_ * 7 - 1; }
 
 void MPC::set_next_vals() {
     
-    next_x_vals.clear();
-    next_y_vals.clear();
+    next_x_vals_.clear();
+    next_y_vals_.clear();
     
     double poly_inc = 2;
     int num_points = 20;
     for(int i = 1; i < num_points; ++i) {
-        next_x_vals.push_back(poly_inc*i);
-        next_y_vals.push_back(polyeval(coeffs, poly_inc*i));
+        next_x_vals_.push_back(poly_inc*i);
+        next_y_vals_.push_back(polyeval(coeffs_, poly_inc*i));
     }
 }
 
 void MPC::Solve(Eigen::VectorXd x0, Eigen::VectorXd coeffs) {
     
-    mpc_x_vals.clear();
-    mpc_y_vals.clear();
-    this->coeffs = coeffs;
+    mpc_x_vals_.clear();
+    mpc_y_vals_.clear();
+    this->coeffs_ = coeffs;
     
     State<double> state = set_state<double>(x0);
     
@@ -234,9 +234,9 @@ void MPC::Solve(Eigen::VectorXd x0, Eigen::VectorXd coeffs) {
     /// e. g., 25 timesteps, 6 dimensions per timestep
     /// 24 actuator tuples, each containing 2 values: (delta, accel)
     /// total of 25 * 6 + 24 * 2 = 198 elements.
-    size_t n_vars = n * state_dimension + (n - 1) * 2;
+    size_t n_vars = n_ * state_dimension_ + (n_ - 1) * 2;
     /// Number of constraints (25 * 6 = 150)
-    size_t n_constraints = n * state_dimension;
+    size_t n_constraints = n_ * state_dimension_;
     
     /// Initial value of the independent variables.
     /// Should be 0 except for the initial values.
@@ -301,14 +301,14 @@ void MPC::Solve(Eigen::VectorXd x0, Eigen::VectorXd coeffs) {
                                       vars_upperbound, constraints_lowerbound,
                                       constraints_upperbound, *this, solution);
     
-    steer = solution.x[get_delta_start()]/deg2rad(25);
-    accel = solution.x[get_a_start()];
+    steer_ = solution.x[get_delta_start()]/deg2rad(25);
+    accel_ = solution.x[get_a_start()];
     
     /// fill minimum cost trajectory points
-    for (int i = 0; i < n - 1; ++i) {
+    for (int i = 0; i < n_ - 1; ++i) {
         
-        mpc_x_vals.push_back(solution.x[get_x_start() + i + 1]);
-        mpc_y_vals.push_back(solution.x[get_y_start() + i + 1]);
+        mpc_x_vals_.push_back(solution.x[get_x_start() + i + 1]);
+        mpc_y_vals_.push_back(solution.x[get_y_start() + i + 1]);
     }
     
     /// fill the reference points in vehicles coordinate space
