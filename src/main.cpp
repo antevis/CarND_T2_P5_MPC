@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
                     double L = vms * (mpc.latency_ / 1000) + .5 * accel * pow(mpc.latency_ / 1000, 2);
                     
                     /// Derived geometrically. (L / psi) is a curvature radius: https://en.wikipedia.org/wiki/Circular_segment
-                    px = psi != 0 ? (L / psi) * sin(std::abs(psi)) : L;
+                    px = std::abs(psi) > 0.0000001 ? (L / psi) * sin(std::abs(psi)) : L;
                     py = px * tan(psi);
                     
                     /// Solver will have the speed back in mph. This is sort of a bug,
@@ -99,15 +99,9 @@ int main(int argc, char* argv[]) {
                     v = vms1 / mph2ms();
                     
                     auto coeffs = polyfit(ptsx_e, ptsy_e, mpc.poly_order_);
-                    double cte = coeffs[0];
+                    double cte = polyeval(coeffs,0);
                     
-                    double dpsi = 0;
-                    for (int i = 1; i < coeffs.size(); ++i) {
-                        
-                        dpsi += i * coeffs[i] * pow(px, i-1);
-                    }
-                    
-                    double epsi = psi-atan(dpsi);
+                    double epsi = 0 - atan(coeffs[0]);
 
                     Eigen::VectorXd state(6);
                     state << px, py, psi, v, cte, epsi;
