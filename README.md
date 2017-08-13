@@ -10,7 +10,7 @@ Self-Driving Car Engineer Nanodegree Program
 
 ## Model
 
-For this project I use the Global Kinematic Model. To describe the model, it may be useful to
+For this project, I use the Global Kinematic Model. It may be useful to
 distinguish three significant parts within it: State, Actuators, Equations.
 
 #### State
@@ -37,14 +37,14 @@ struct State {
     T epsi;
 };
 ```
-Since values may be both `CppADD::AD<double>` and `double`, leveraging the generics.
+Generics are useful here, since values may be both `CppADD::AD<double>` and `double`.
 In fact, my implementation implies coordinate conversion to vehicle's coordinate system
 with `x, y, psi` to be always equal to `0`, but since I am going to take latency into
 account, those elements will eventually have non-zero values.
 
 #### Actuators
 
-Model has two actuators: **steering** and **throttle**, and they play a dual role.
+The model has two actuators: **steering** and **throttle**, and they play a dual role.
  
 1. We use actuators' values provided by the Simulator environment at each telemetry package to 
 estimate vehicle's state with latency.
@@ -52,10 +52,10 @@ estimate vehicle's state with latency.
     **Steering** angles span the interval of [-25,+25] degrees, **wherein values are in radians**, 
     with negative/positive values representing angles to the left/right of the zero point respectively.
 
-    **Throttle** works the same way within the interval of [-1,+1], with `-/+` representing `breaking /
-     acceleration`.
+    **Throttle** works the same way within the interval of [-1,+1], where `-/+` represent 
+   `breaking/acceleration`.
 
-2. The Model's main solution objective is to compute the new actuators values and return them to the 
+2. The Model's primary solution objective is to compute the new actuators values and return them to the 
 Simulator environment as the control commands for the vehicle.
 
 #### Equations
@@ -65,15 +65,15 @@ The following standard equations have been adopted and implemented for the Kinem
 ![alt text][formulae]
 
 However, to reflect **latency**, I am using slightly more sophisticated calculations.
-I decided to not neglect the *lateral displacement* (which is the `dy` component in the vehicle's
+I decided not to neglect the *lateral displacement* (which is the `dy` component in the vehicle's
 coordinate system), and compute the vehicle's state at the end of the latency delay as follows:
 
 ![alt_text][latencyFormulae]
 
 Where:
 
-* `phi` - vehicle's orientation at time `dt` given the steering angle `delta` at time `0`.
-* `L` - path length travelled by the vehicle during `dt`
+* `phi` - vehicle's orientation at time `dt`, given the steering angle `delta` at time `0`.
+* `L` - path length traveled by the vehicle during `dt`
 * `R` - curvature radius of `L`
 * `dx` - longitudinal displacement during `dt`
 * `dy` - lateral displacement during `dt`
@@ -100,7 +100,7 @@ of independent variables.
 
 #### Choosing the number of timesteps and `dt`
 The vectors' dimensionality directly **affects** the consequent **computational complexity**. 
-For `N` timesteps of observations there are `N - 1` controls actuations. With the dimensionality of `6` for
+For `N` timesteps of observations, there are `N - 1` controls actuations. With the dimensionality of `6` for
 observation (`state`) and `2` for actuation (`steer, accel`), the total length of the variables vector
 will be:
  
@@ -113,11 +113,11 @@ length of `78`.
 
 #### The code
 
-The solution is largely based in the 
+The solution is largely based on the 
 [implementation of the MPC given at classes](https://github.com/udacity/CarND-MPC-Quizzes/blob/master/mpc_to_line/solution/MPC.cpp).
-Though, I have completely teared it apart and deeply refactored to my flavor. The final solution might 
+Though, I have completely torn it apart and deeply refactored to my flavor. The final solution might 
 seem a bit over-engineered but doing so really helped to understand what's actually going on under the
-hood and makes it easily scalable. The most significant conceptual alteration is that I completely removed 
+hood and makes the solution easily scalable. The most significant conceptual alteration is that I completely removed 
 the `FG_eval` class and transferred it's single-method  functionality to the `MPC` class itself, using it 
 as a delegate for `CppAD::ipopt::solve<Dvector, FG_eval>`:
 
@@ -145,7 +145,7 @@ The experimentation showed that the `epsi`, which is the vehicle's orientation e
 (in fact, orders of magnitude greater) importance on the vehicle's behavior than the `cte`. 
 Indeed, `cte` itself might not be much of a problem unless it's still within the lane bounds and the 
 vehicle's orientation (`psi`) is close to the expected - it would just mean that the vehicle moves 
-parallel to the expected trajectory with a slight lateral shift. While large `epsi` mean that the vehicle 
+parallel to the expected trajectory with a slight lateral shift. While large `epsi` signifies that the vehicle 
 isn't really parallel to the expected trajectory, which is obviously a great concern, especially at 
 higher velocities.
 
