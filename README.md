@@ -10,8 +10,8 @@ Self-Driving Car Engineer Nanodegree Program
 
 ## Model
 
-For this project, I use the Global Kinematic Model. It may be useful to
-distinguish three significant parts within it: State, Actuators, Equations.
+For this project, I follow the **Global Kinematic Model**. It may be useful to
+distinguish three significant parts within it: *State*, *Actuators*, *Equations*.
 
 #### State
 
@@ -39,7 +39,7 @@ struct State {
 ```
 Generics are useful here, since values may be both `CppADD::AD<double>` and `double`.
 In fact, my implementation implies coordinate conversion to vehicle's coordinate system
-with `x, y, psi` to be always equal to `0`, but since I am going to take latency into
+with `x, y, psi` to be always equal to `0`, but since I am going to take ***latency*** into
 account, those elements will eventually have non-zero values.
 
 #### Actuators
@@ -47,7 +47,7 @@ account, those elements will eventually have non-zero values.
 The model has two actuators: **steering** and **throttle**, and they play a dual role.
  
 1. We use actuators' values provided by the Simulator environment at each telemetry package to 
-estimate vehicle's state with latency.
+estimate vehicle's state with **latency**.
 
     **Steering** angles span the interval of [-25,+25] degrees, **wherein values are in radians**, 
     with negative/positive values representing angles to the left/right of the zero point respectively.
@@ -55,7 +55,7 @@ estimate vehicle's state with latency.
     **Throttle** works the same way within the interval of [-1,+1], where `-/+` represent 
    `breaking/acceleration`.
 
-2. The Model's primary solution objective is to compute the new actuators values and return them to the 
+2. The Model's solution **primary objective** is to compute the new actuators values and return them to the 
 Simulator environment as the control commands for the vehicle.
 
 #### Equations
@@ -65,7 +65,7 @@ The following standard equations have been adopted and implemented for the Kinem
 ![alt text][formulae]
 
 However, to reflect **latency**, I am using slightly more sophisticated calculations.
-I decided not to neglect the *lateral displacement* (which is the `dy` component in the vehicle's
+I decided not to neglect the ***lateral displacement*** (which is the `dy` component in the vehicle's
 coordinate system), and compute the vehicle's state at the end of the latency delay as follows:
 
 ![alt_text][latencyFormulae]
@@ -92,7 +92,7 @@ In this project, the Model Predictive Control has been implemented using the
 [**Ipopt**](http://projects.coin-or.org/Ipopt), which is  a library for 
 large-scale nonlinear optimization.
 
-Specifically, `CppAD::ipopt::solve<Dvector, FG_eval>`, is the method that does the solution.
+Specifically, `CppAD::ipopt::solve<Dvector, FG_eval>` -- is the method that does most of the work.
 
 It consumes long vectors of all the independent variables, variables bounds (if any) and constraints 
 defined by the vehicle model, and returns locally optimal values of the same dimensionality as the vector
