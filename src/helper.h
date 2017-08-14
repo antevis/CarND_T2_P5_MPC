@@ -85,5 +85,14 @@ inline double mph2ms() {
     return mPerMile / sPerHour;
 }
 
+inline double derivative(Eigen::VectorXd coeffs, double x) {
+    double dy = 0;
+    for (int i = 1; i < coeffs.size(); ++i) {
+        dy += i * coeffs[i] * pow(x, i-1);
+    }
+    
+    return dy;
+}
+
 
 #endif /* helper_h */
